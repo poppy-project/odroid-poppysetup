@@ -37,7 +37,7 @@ Let's start the installation :
 
  2. Download and run poppy_setup.sh
     ```bash
-      odroid@odroid:~$ curl -L https://raw.githubusercontent.com/nicolas-rabault/poppy_install/master/poppy_setup.sh | sudo bash
+      odroid@odroid:~$ curl -L https://raw.githubusercontent.com/poppy-project/poppy_install/master/poppy_setup.sh | sudo bash
     ```
     Do not forget to set the root password "odroid"
 
