@@ -1,76 +1,117 @@
-#! /bin/bash
+#!/usr/bin/env bash
+set -x
 
-PYTHONS="2.7.9"
-REPOS="pypot poppy-creature poppy-ergo"
+usage() {
+  echo "Usage: $0 [-S, --use-stable-release] CREATURE1 CREATURE2 ..." 1>&2
+  exit 1
+}
 
-# Install pyenv
-export PATH="$HOME/.pyenv/bin:$PATH"
+while getopts ":S" opt; do
+  case $opt in
+    S)
+      use_stable_release=1
+      ;;
+    *)
+      usage
+      exit 1
+  esac
+done
 
-if hash pyenv 2>/dev/null; then
-  echo pyenv already installed.
-else
-  curl -L https://raw.githubusercontent.com/yyuu/pyenv-installer/master/bin/pyenv-installer | bash
+shift $((OPTIND-1))
 
-  echo "
-export PATH=\"\$HOME/.pyenv/bin:\$PATH\"
-eval \"\$(pyenv init -)\"
-eval \"\$(pyenv virtualenv-init -)\"
-" >> ~/.bashrc
+creatures=$@
+EXISTING_ONES="poppy-humanoid poppy-ergo-jr poppy-torso"
 
-  eval "$(pyenv init -)"
-  eval "$(pyenv virtualenv-init -)"
+if [ "${creatures}" == "" ]; then
+  echo 'ERROR: option "CREATURE" not given. See -h.' >&2
+  exit 1
 fi
 
-# Clone repos
-echo 'Clone repos.'
-mkdir $HOME/dev
-cd $HOME/dev
-
-# Clone poppy repos.
-for repo in $REPOS
-do
-  if [[ $repo == poppy-ergo ]]; then
-    username=pierre-rouanet
-  else
-    username=poppy-project
+for creature in $creatures
+  do
+  if ! [[ $EXISTING_ONES =~ $creature ]]; then
+    echo "ERROR: creature \"${creature}\" not among possible creatures (choices \"$EXISTING_ONES\")"
+    exit 1
   fi
-
-  path=https://github.com/$username/$repo.git
-  git clone $path
 done
 
-# Install Scipy dependancies
-sudo apt-get install libblas3gf libc6 libgcc1 libgfortran3 liblapack3gf libstdc++6 build-essential gfortran python-all-dev libatlas-base-dev
 
+install_pyenv() {
+  sudo apt-get install -y curl git
+  sudo apt-get install -y make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget llvm
+  sudo apt-get install -y libfreetype6-dev libpng++-dev
 
-# Install Poppy repos
-for PYTHON in $PYTHONS
-do
-  pyenv install $PYTHON
-  pyenv rehash
-  pyenv global $PYTHON
+  curl -L https://raw.githubusercontent.com/yyuu/pyenv-installer/master/bin/pyenv-installer | bash
 
-  pip install ipython[all]
+  export PATH="$HOME/.pyenv/bin:$PATH"
+  eval "$(pyenv init -)"
+  eval "$(pyenv virtualenv-init -)"
 
-  if [[ $PYTHON == pypy* ]]; then
-    numpy_repo=git+https://bitbucket.org/pypy/numpy.git
-  else
-    numpy_repo=numpy
-  fi
+  echo "
+  export PATH=\"\$HOME/.pyenv/bin:\$PATH\"
+  eval \"\$(pyenv init -)\"
+  eval \"\$(pyenv virtualenv-init -)\"" >> $HOME/.bashrc
+}
 
-  pip install $numpy_repo
+install_python() {
+  pyenv install -s 2.7.9
+  pyenv global 2.7.9
+}
+
+install_python_std_packages() {
+  # Install Scipy dependancies
+  sudo apt-get install libblas3gf libc6 libgcc1 libgfortran3 liblapack3gf libstdc++6 build-essential gfortran python-all-dev libatlas-base-dev
+  pip install numpy
   pip install scipy
+  pip install matplotlib
+  pip install ipython[all]
+}
 
-  for repo in $REPOS
-  do
-    path=~/dev/$repo
+install_notebook_startup() {
+    curl -L https://raw.githubusercontent.com/poppy-project/poppy-installer/master/install-deps/install-notebook.sh | sudo bash
+}
 
-    if [[ $repo == poppy-* ]]; then
-      path=$path/software
+install_poppy_software() {
+  if [ -z "$use_stable_release" ]; then
+    if [ -z "$POPPY_ROOT" ]; then
+      POPPY_ROOT="${HOME}/dev"
     fi
 
-    cd $path
-    python setup.py develop
-  done
-done
+    mkdir -p $POPPY_ROOT
+  fi
 
+  for repo in pypot poppy-creature $creatures
+  do
+    cd $POPPY_ROOT
+
+    if [ ! -z "$use_stable_release" ]; then
+      pip install $repo
+    else
+      git clone https://github.com/poppy-project/$repo.git
+
+      cd $repo
+      if [[ $repo == poppy-* ]]; then
+        cd software
+      fi
+
+      python setup.py develop
+
+    fi
+  done
+}
+
+configure_dialout() {
+  sudo adduser $USER dialout
+}
+
+install_poppy_environment() {
+  install_pyenv
+  install_python
+  install_python_std_packages
+  install_poppy_software
+  install_notebook_startup
+
+  echo "Please now reboot your system"
+}
+
+install_poppy_environment

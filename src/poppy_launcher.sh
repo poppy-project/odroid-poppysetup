@@ -34,7 +34,7 @@ export HOME=/home/poppy
 # Update needed apps.
 
 # Poppy creatures installer
-su - poppy -c "curl -L https://raw.githubusercontent.com/pierre-rouanet/build-raspbian-image/master/delivery/poppy-installer | bash -s poppy-humanoid" >> /home/poppy/install_log
+su - poppy -c "curl -L https://raw.githubusercontent.com/poppy-project/poppy_install/master/src/poppy_install.sh | bash -s poppy-humanoid" >> /home/poppy/install_log
 
 # WebApp installer
 su - poppy -c "curl -L https://raw.githubusercontent.com/MakingBot/webapp/master/poppy/setup.sh | sudo bash" >> /home/poppy/install_log
