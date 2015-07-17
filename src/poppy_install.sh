@@ -60,7 +60,7 @@ install_python() {
 
 install_python_std_packages() {
   # Install Scipy dependancies
-  sudo apt-get install libblas3gf libc6 libgcc1 libgfortran3 liblapack3gf libstdc++6 build-essential gfortran python-all-dev libatlas-base-dev
+  sudo apt-get -y install libblas3gf libc6 libgcc1 libgfortran3 liblapack3gf libstdc++6 build-essential gfortran python-all-dev libatlas-base-dev
   pip install numpy
   pip install scipy
   pip install matplotlib
