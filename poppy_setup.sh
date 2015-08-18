@@ -105,7 +105,9 @@ echo -e "\e[33mYour new password is 'poppy'\e[0m"
 
 
 # see http://forum.odroid.com/viewtopic.php?f=7&t=1070 for understanting 
-echo -e "\e[33mChange Mac address'\e[0m"
-rm /etc/smsc95xx_mac_addr
+if [ -e /etc/smsc95xx_mac_addr ]; then
+    echo -e "\e[33mChange Mac address'\e[0m"
+    rm /etc/smsc95xx_mac_addr
+fi
 
 reboot
