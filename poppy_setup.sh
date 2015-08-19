@@ -78,9 +78,16 @@ fi
 
 apt-get update
 apt-get install avahi-daemon passwd libnss-mdns
-# Run installation scripts
-echo -e "\e[33mResize your file system.\e[0m"
-resize_p2
+
+# Do it only if it is a ODROID board vs rpi
+if [ -e /etc/smsc95xx_mac_addr ]; then
+    echo -e "\e[33mResize your file system.\e[0m"
+    resize_p2
+    # see http://forum.odroid.com/viewtopic.php?f=7&t=1070 for understanting 
+    echo -e "\e[33mChange Mac address'\e[0m"
+    rm /etc/smsc95xx_mac_addr
+fi
+
 
 echo -e "\e[33mdownload needed files.\e[0m"
 wget -P $HOME/src https://raw.githubusercontent.com/poppy-project/poppy_install/master/src/poppy_launcher.sh
@@ -104,10 +111,6 @@ echo -e '\e[33mto follow the next step of installation process.\e[0m'
 echo -e "\e[33mYour new password is 'poppy'\e[0m"
 
 
-# see http://forum.odroid.com/viewtopic.php?f=7&t=1070 for understanting 
-if [ -e /etc/smsc95xx_mac_addr ]; then
-    echo -e "\e[33mChange Mac address'\e[0m"
-    rm /etc/smsc95xx_mac_addr
-fi
+
 
 reboot
