@@ -72,7 +72,7 @@ install_python_std_packages() {
 }
 
 install_notebook_startup() {
-    curl -L https://raw.githubusercontent.com/poppy-project/poppy-installer/master/install-deps/install-notebook.sh | sudo bash
+    curl -L https://raw.githubusercontent.com/poppy-project/poppy-installer/61376b5f12a7fa1fddd1ceafa3f117483ce7c4b4/install-deps/install-notebook.sh | sudo bash
 }
 
 install_poppy_software() {
