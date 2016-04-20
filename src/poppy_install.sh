@@ -178,6 +178,34 @@ install_custom_raspiconfig()
     sudo mv raspi-config /usr/bin/
 }
 
+setup_update()
+{
+    cd || exit
+    wget https://raw.githubusercontent.com/poppy-project/raspoppy/master/poppy-update.sh -O ~/.poppy-update.sh
+
+    cat >> poppy-update << EOF
+#!/usr/bin/env python
+
+import os
+import yaml
+
+from subprocess import call
+
+
+with open(os.path.expanduser('~/.poppy_config.yaml')) as f:
+    config = yaml.load(f)
+
+
+with open(config['update']['logfile'], 'w') as f:
+    call(['bash', os.path.expanduser('~/.poppy-update.sh'),
+          config['update']['url'],
+          config['update']['logfile'],
+          config['update']['lockfile']], stdout=f, stderr=f)
+EOF
+    chmod +x poppy-update
+    mv poppy-update $HOME/.pyenv/versions/2.7.9/bin/
+}
+
 install_poppy_environment() {
   install_pyenv
   install_python
@@ -187,6 +215,7 @@ install_poppy_environment() {
   install_puppet_master
   redirect_port80_webinterface
   install_custom_raspiconfig
+  setup_update
 
   echo "Please now reboot your system"
 }
