@@ -108,12 +108,85 @@ configure_dialout() {
   sudo adduser $USER dialout
 }
 
+install_puppet_master() {
+    cd || exit
+    wget https://github.com/poppy-project/puppet-master/archive/master.zip
+    unzip master.zip
+    rm master.zip
+    mv puppet-master-master puppet-master
+
+    pushd puppet-master
+        pip install flask pyyaml requests
+
+        python bootstrap.py poppy $creatures
+        install_snap "$(pwd)"
+    popd
+}
+
+install_snap()
+{
+    pushd $1
+        wget https://github.com/jmoenig/Snap--Build-Your-Own-Blocks/archive/master.zip
+        unzip master.zip
+        rm master.zip
+        mv Snap--Build-Your-Own-Blocks-master snap
+
+        pypot_root=$(python -c "import pypot, os; print(os.path.dirname(pypot.__file__))")
+        ln -s $pypot_root/server/snap_projects/pypot-snap-blocks.xml snap/libraries/poppy.xml
+        echo -e "poppy.xml\tPoppy robots" >> snap/libraries/LIBRARIES
+
+        for project in $pypot_root/server/snap_projects/*.xml; do
+            ln -s $project snap/Examples/
+
+            filename=$(basename "$project")
+            echo -e "$filename\tPoppy robots" >> snap/Examples/EXAMPLES
+        done
+
+        wget https://github.com/poppy-project/poppy-monitor/archive/master.zip
+        unzip master.zip
+        rm master.zip
+        mv poppy-monitor-master monitor
+    popd
+}
+
+redirect_port80_webinterface()
+{
+    cat >> firewall << EOF
+#!/bin/sh
+
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+
+# Flush any existing firewall rules we might have
+iptables -F
+iptables -t nat -F
+iptables -t mangle -F
+iptables -X
+
+# Perform the rewriting magic.
+iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to 5000
+EOF
+    chmod +x firewall
+    sudo chown root:root firewall
+    sudo mv firewall /etc/network/if-up.d/firewall
+}
+
+install_custom_raspiconfig()
+{
+    wget https://raw.githubusercontent.com/pierre-rouanet/raspi-config/master/raspi-config
+    chmod +x raspi-config
+    sudo chown root:root raspi-config
+    sudo mv raspi-config /usr/bin/
+}
+
 install_poppy_environment() {
   install_pyenv
   install_python
   install_python_std_packages
   install_poppy_software
   install_notebook_startup
+  install_puppet_master
+  redirect_port80_webinterface
+  install_custom_raspiconfig
 
   echo "Please now reboot your system"
 }
