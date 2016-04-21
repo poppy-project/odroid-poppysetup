@@ -1,11 +1,10 @@
-Poppy software installation
-===========================
+# Poppy software installation for odroid board
 
 This tutorial describe how to install a clean poppy embedded linux environment from scratch.
 
 To do that you will need :
 
- - your poppy main board (odroid U3 or pasberryPi)
+ - your poppy main board (odroid U3 or XU4)
  - the associated memmory card
  - a card reader for your computer
  - an ethernet connection to your network (internet and local)
