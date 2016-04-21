@@ -36,8 +36,7 @@ Let's start the installation :
 
  2. Download and run poppy_setup.sh
     ```bash
-      odroid@odroid:~$ wget https://raw.githubusercontent.com/poppy-project/odroid-poppysetup/master/poppy_setup.sh
-      sudo bash poppy_setup.sh
+      odroid@odroid:~$ wget https://raw.githubusercontent.com/poppy-project/odroid-poppysetup/master/poppy_setup.sh && sudo bash poppy_setup.sh poppy-humanoid
     ```
     Do not forget to set the root password "odroid"
 
