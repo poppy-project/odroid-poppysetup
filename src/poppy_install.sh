@@ -54,8 +54,8 @@ install_pyenv() {
 }
 
 install_python() {
-  pyenv install -s 2.7.9
-  pyenv global 2.7.9
+  pyenv install -s 2.7.11
+  pyenv global 2.7.11
 }
 
 install_python_std_packages() {
@@ -265,7 +265,7 @@ with open(config['update']['logfile'], 'w') as f:
           config['update']['lockfile']], stdout=f, stderr=f)
 EOF
     chmod +x poppy-update
-    mv poppy-update $HOME/.pyenv/versions/2.7.9/bin/
+    mv poppy-update $HOME/.pyenv/versions/2.7.11/bin/
 }
 
 install_poppy_environment() {
