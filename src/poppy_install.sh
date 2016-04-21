@@ -20,7 +20,7 @@ done
 shift $((OPTIND-1))
 
 creatures=$@
-EXISTING_ONES="poppy-humanoid poppy-ergo-jr poppy-torso"
+EXISTING_ONES="poppy-humanoid poppy-torso"
 
 if [ "${creatures}" == "" ]; then
   echo 'ERROR: option "CREATURE" not given. See -h.' >&2
