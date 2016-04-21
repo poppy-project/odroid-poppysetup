@@ -194,7 +194,7 @@ autostartup_webinterface()
 {
     cd || exit
 
-    sudo sed -i.bkp "/^exit/i #jupyter service\n$HOME/puppet-master/start-pwid &\n" /etc/rc.local
+    sudo sed -i.bkp "/^exit/i #puppet-master service\n$HOME/puppet-master/start-pwid &\n" /etc/rc.local
 
 
     cat >> $HOME/puppet-master/start-pwid << EOF
