@@ -83,14 +83,14 @@ apt-get install --yes avahi-daemon passwd libnss-mdns
 if [ -e /etc/smsc95xx_mac_addr ]; then
     echo -e "\e[33mResize your file system.\e[0m"
     resize_p2
-    # see http://forum.odroid.com/viewtopic.php?f=7&t=1070 for understanting 
+    # see http://forum.odroid.com/viewtopic.php?f=7&t=1070 for understanting
     echo -e "\e[33mChange Mac address'\e[0m"
     rm /etc/smsc95xx_mac_addr
 fi
 
 
 echo -e "\e[33mdownload needed files.\e[0m"
-wget -P $HOME/src https://raw.githubusercontent.com/poppy-project/poppy_install/master/src/poppy_launcher.sh
+wget -P $HOME/src https://raw.githubusercontent.com/poppy-project/odroid-poppysetup/master/src/poppy_launcher.sh
 (crontab -l; echo "@reboot (cd $HOME/src; bash poppy_launcher.sh; rm poppy_launcher.sh)") | crontab
 cd ..
 
