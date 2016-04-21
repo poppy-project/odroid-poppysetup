@@ -101,23 +101,10 @@ if not os.path.exists(d):
 
 autostart_jupyter()
 {
-
-    cat >> jupyter.service << EOF
-[Unit]
-Description=Jupyter service
-
-[Service]
-Type=simple
-ExecStart=$HOME/.jupyter/start-daemon &
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-    sudo mv jupyter.service /lib/systemd/system/jupyter.service
+    sudo sed -i.bkp "/^exit/i #jupyter service\n$HOME/.jupyter/start-daemon &\n" /etc/rc.local
 
     cat >> $HOME/.jupyter/launch.sh << 'EOF'
-export PATH=$HOME/miniconda/bin:$PATH
+export PATH=$HOME/.pyenv/shims/:$PATH
 jupyter notebook
 EOF
 
@@ -127,8 +114,6 @@ su - $(whoami) -c "bash $HOME/.jupyter/launch.sh"
 EOF
 
     chmod +x $HOME/.jupyter/launch.sh $HOME/.jupyter/start-daemon
-    sudo systemctl daemon-reload
-    sudo systemctl enable jupyter.service
 }
 
 install_poppy_software() {
@@ -209,19 +194,8 @@ autostartup_webinterface()
 {
     cd || exit
 
-    cat >> puppet-master.service << EOF
-[Unit]
-Description=Puppet Master service
+    sudo sed -i.bkp "/^exit/i #jupyter service\n$HOME/puppet-master/start-pwid &\n" /etc/rc.local
 
-[Service]
-Type=simple
-ExecStart=$HOME/puppet-master/start-pwid &
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-    sudo mv puppet-master.service /lib/systemd/system/puppet-master.service
 
     cat >> $HOME/puppet-master/start-pwid << EOF
 #!/bin/bash
@@ -229,15 +203,12 @@ su - $(whoami) -c "bash $HOME/puppet-master/launch.sh"
 EOF
 
     cat >> $HOME/puppet-master/launch.sh << 'EOF'
-export PATH=$HOME/miniconda/bin:$PATH
+export PATH=$HOME/.pyenv/shims/:$PATH
 pushd $HOME/puppet-master
     python bouteillederouge.py 1>&2 2> /tmp/bouteillederouge.log
 popd
 EOF
     chmod +x $HOME/puppet-master/launch.sh $HOME/puppet-master/start-pwid
-
-    sudo systemctl daemon-reload
-    sudo systemctl enable puppet-master.service
 }
 
 redirect_port80_webinterface()
