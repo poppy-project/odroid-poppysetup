@@ -68,11 +68,66 @@ install_python_std_packages() {
   pip install matplotlib
 }
 
-install_notebook_startup() {
-  mkdir -p $HOME/notebooks
-  IPYTHON=$(which ipython)
-  # Start ipython notebook just after the boot
-  sudo sed -i.bkp "/^exit/i #added lines\nsu poppy <<'EOF'\n$IPYTHON notebook --ip 0.0.0.0 --no-browser --no-mathjax $HOME/notebooks &\nEOF\n" /etc/rc.local
+configure_jupyter()
+{
+    JUPYTER_CONFIG_FILE=$HOME/.jupyter/jupyter_notebook_config.py
+    JUPTER_NOTEBOOK_FOLDER=$HOME/notebooks
+
+    mkdir $JUPTER_NOTEBOOK_FOLDER
+
+    jupyter notebook --generate-config
+
+    cat >>$JUPYTER_CONFIG_FILE << EOF
+# --- Poppy configuration ---
+c.NotebookApp.ip = '*'
+c.NotebookApp.open_browser = False
+c.NotebookApp.notebook_dir = '$JUPTER_NOTEBOOK_FOLDER'
+# --- Poppy configuration ---
+EOF
+
+    python -c """
+import os
+
+from jupyter_core.paths import jupyter_data_dir
+
+d = jupyter_data_dir()
+if not os.path.exists(d):
+    os.makedirs(d)
+"""
+
+    pip install https://github.com/ipython-contrib/IPython-notebook-extensions/archive/master.zip --user
+}
+
+autostart_jupyter()
+{
+
+    cat >> jupyter.service << EOF
+[Unit]
+Description=Jupyter service
+
+[Service]
+Type=simple
+ExecStart=$HOME/.jupyter/start-daemon &
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+    sudo mv jupyter.service /lib/systemd/system/jupyter.service
+
+    cat >> $HOME/.jupyter/launch.sh << 'EOF'
+export PATH=$HOME/miniconda/bin:$PATH
+jupyter notebook
+EOF
+
+    cat >> $HOME/.jupyter/start-daemon << EOF
+#!/bin/bash
+su - $(whoami) -c "bash $HOME/.jupyter/launch.sh"
+EOF
+
+    chmod +x $HOME/.jupyter/launch.sh $HOME/.jupyter/start-daemon
+    sudo systemctl daemon-reload
+    sudo systemctl enable jupyter.service
 }
 
 install_poppy_software() {
@@ -149,6 +204,41 @@ install_snap()
     popd
 }
 
+autostartup_webinterface()
+{
+    cd || exit
+
+    cat >> puppet-master.service << EOF
+[Unit]
+Description=Puppet Master service
+
+[Service]
+Type=simple
+ExecStart=$HOME/puppet-master/start-pwid &
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+    sudo mv puppet-master.service /lib/systemd/system/puppet-master.service
+
+    cat >> $HOME/puppet-master/start-pwid << EOF
+#!/bin/bash
+su - $(whoami) -c "bash $HOME/puppet-master/launch.sh"
+EOF
+
+    cat >> $HOME/puppet-master/launch.sh << 'EOF'
+export PATH=$HOME/miniconda/bin:$PATH
+pushd $HOME/puppet-master
+    python bouteillederouge.py 1>&2 2> /tmp/bouteillederouge.log
+popd
+EOF
+    chmod +x $HOME/puppet-master/launch.sh $HOME/puppet-master/start-pwid
+
+    sudo systemctl daemon-reload
+    sudo systemctl enable puppet-master.service
+}
+
 redirect_port80_webinterface()
 {
     cat >> firewall << EOF
@@ -211,8 +301,10 @@ install_poppy_environment() {
   install_python
   install_python_std_packages
   install_poppy_software
-  install_notebook_startup
+  configure_jupyter
+  autostart_jupyter
   install_puppet_master
+  autostartup_webinterface
   redirect_port80_webinterface
   install_custom_raspiconfig
   setup_update
