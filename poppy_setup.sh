@@ -77,7 +77,7 @@ then
 fi
 
 apt-get update
-apt-get install --yes avahi-daemon passwd libnss-mdns network-manager
+apt-get install --yes avahi-daemon passwd libnss-mdns network-manager iptables
 
 # Do it only if it is a ODROID board vs rpi
 if [ -e /etc/smsc95xx_mac_addr ]; then
