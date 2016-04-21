@@ -34,7 +34,9 @@ export HOME=/home/poppy
 # Update needed apps.
 
 # Poppy creatures installer
-su - poppy -c "curl -L https://raw.githubusercontent.com/poppy-project/odroid-poppysetup/master/src/poppy_install.sh | bash -s poppy-humanoid" >> /home/poppy/install_log
+creature=`cat /home/odroid/src/creature`
+
+su - poppy -c "curl -L https://raw.githubusercontent.com/poppy-project/odroid-poppysetup/master/src/poppy_install.sh | bash -s $creature" >> /home/poppy/install_log
 
 
 # Remove instalation at startup

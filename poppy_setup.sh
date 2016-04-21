@@ -1,5 +1,20 @@
 #! /bin/bash
 
+
+creature=$1
+EXISTING_ONES="poppy-humanoid poppy-torso"
+
+if [ "${creature}" == "" ]; then
+  echo 'ERROR: option "CREATURE" not given. See -h.' >&2
+  exit 1
+fi
+
+if ! [[ $EXISTING_ONES =~ $creature ]]; then
+    echo "ERROR: creature \"${creature}\" not among possible creatures (choices \"$EXISTING_ONES\")"
+    exit 1
+fi
+
+
 resize_p2() {
     DATE=`date +%Y.%m.%d-%H.%M`
     # this takes in consideration /dev/mmcblk0p2 as the rootfs!
@@ -92,6 +107,7 @@ fi
 echo -e "\e[33mdownload needed files.\e[0m"
 wget -P $HOME/src https://raw.githubusercontent.com/poppy-project/odroid-poppysetup/master/src/poppy_launcher.sh
 (crontab -l; echo "@reboot (cd $HOME/src; bash poppy_launcher.sh; rm poppy_launcher.sh)") | crontab
+echo $creature > $HOME/src/creature
 cd ..
 
 echo -e "\e[33mDefault Hostname change to \e[4mpoppy\e[0m."
