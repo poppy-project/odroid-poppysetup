@@ -36,8 +36,6 @@ export HOME=/home/poppy
 # Poppy creatures installer
 su - poppy -c "curl -L https://raw.githubusercontent.com/poppy-project/odroid-poppysetup/master/src/poppy_install.sh | bash -s poppy-humanoid" >> /home/poppy/install_log
 
-# WebApp installer
-su - poppy -c "curl -L https://raw.githubusercontent.com/MakingBot/webapp/master/poppy/setup.sh | sudo bash" >> /home/poppy/install_log
 
 # Remove instalation at startup
 sed -i /install_log/d /home/poppy/.bashrc

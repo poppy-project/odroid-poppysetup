@@ -62,17 +62,72 @@ install_python_std_packages() {
   # Install Scipy dependancies
   sudo apt-get -y install libblas3gf libc6 libgcc1 libgfortran3 liblapack3gf libstdc++6 build-essential gfortran python-all-dev libatlas-base-dev
   # not sure it is realy needed
+  pip install --upgrade pip
   pip install numpy
   pip install scipy
   pip install matplotlib
-  pip install ipython[all]
 }
 
-install_notebook_startup() {
-  mkdir -p $HOME/notebooks
-  IPYTHON=$(which ipython)
-  # Start ipython notebook just after the boot
-  sudo sed -i.bkp "/^exit/i #added lines\nsu poppy <<'EOF'\n$IPYTHON notebook --ip 0.0.0.0 --no-browser --no-mathjax $HOME/notebooks &\nEOF\n" /etc/rc.local
+configure_jupyter()
+{
+    JUPYTER_CONFIG_FILE=$HOME/.jupyter/jupyter_notebook_config.py
+    JUPTER_NOTEBOOK_FOLDER=$HOME/notebooks
+
+    mkdir $JUPTER_NOTEBOOK_FOLDER
+
+    jupyter notebook --generate-config
+
+    cat >>$JUPYTER_CONFIG_FILE << EOF
+# --- Poppy configuration ---
+c.NotebookApp.ip = '*'
+c.NotebookApp.open_browser = False
+c.NotebookApp.notebook_dir = '$JUPTER_NOTEBOOK_FOLDER'
+# --- Poppy configuration ---
+EOF
+
+    python -c """
+import os
+
+from jupyter_core.paths import jupyter_data_dir
+
+d = jupyter_data_dir()
+if not os.path.exists(d):
+    os.makedirs(d)
+"""
+
+    pip install https://github.com/ipython-contrib/IPython-notebook-extensions/archive/master.zip --user
+}
+
+autostart_jupyter()
+{
+
+    cat >> jupyter.service << EOF
+[Unit]
+Description=Jupyter service
+
+[Service]
+Type=simple
+ExecStart=$HOME/.jupyter/start-daemon &
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+    sudo mv jupyter.service /lib/systemd/system/jupyter.service
+
+    cat >> $HOME/.jupyter/launch.sh << 'EOF'
+export PATH=$HOME/miniconda/bin:$PATH
+jupyter notebook
+EOF
+
+    cat >> $HOME/.jupyter/start-daemon << EOF
+#!/bin/bash
+su - $(whoami) -c "bash $HOME/.jupyter/launch.sh"
+EOF
+
+    chmod +x $HOME/.jupyter/launch.sh $HOME/.jupyter/start-daemon
+    sudo systemctl daemon-reload
+    sudo systemctl enable jupyter.service
 }
 
 install_poppy_software() {
@@ -108,12 +163,151 @@ configure_dialout() {
   sudo adduser $USER dialout
 }
 
+install_puppet_master() {
+    cd || exit
+    wget https://github.com/poppy-project/puppet-master/archive/master.zip
+    unzip master.zip
+    rm master.zip
+    mv puppet-master-master puppet-master
+
+    pushd puppet-master
+        pip install flask pyyaml requests
+
+        python bootstrap.py poppy $creatures
+        install_snap "$(pwd)"
+    popd
+}
+
+install_snap()
+{
+    pushd $1
+        wget https://github.com/jmoenig/Snap--Build-Your-Own-Blocks/archive/master.zip
+        unzip master.zip
+        rm master.zip
+        mv Snap--Build-Your-Own-Blocks-master snap
+
+        pypot_root=$(python -c "import pypot, os; print(os.path.dirname(pypot.__file__))")
+        ln -s $pypot_root/server/snap_projects/pypot-snap-blocks.xml snap/libraries/poppy.xml
+        echo -e "poppy.xml\tPoppy robots" >> snap/libraries/LIBRARIES
+
+        for project in $pypot_root/server/snap_projects/*.xml; do
+            ln -s $project snap/Examples/
+
+            filename=$(basename "$project")
+            echo -e "$filename\tPoppy robots" >> snap/Examples/EXAMPLES
+        done
+
+        wget https://github.com/poppy-project/poppy-monitor/archive/master.zip
+        unzip master.zip
+        rm master.zip
+        mv poppy-monitor-master monitor
+    popd
+}
+
+autostartup_webinterface()
+{
+    cd || exit
+
+    cat >> puppet-master.service << EOF
+[Unit]
+Description=Puppet Master service
+
+[Service]
+Type=simple
+ExecStart=$HOME/puppet-master/start-pwid &
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+    sudo mv puppet-master.service /lib/systemd/system/puppet-master.service
+
+    cat >> $HOME/puppet-master/start-pwid << EOF
+#!/bin/bash
+su - $(whoami) -c "bash $HOME/puppet-master/launch.sh"
+EOF
+
+    cat >> $HOME/puppet-master/launch.sh << 'EOF'
+export PATH=$HOME/miniconda/bin:$PATH
+pushd $HOME/puppet-master
+    python bouteillederouge.py 1>&2 2> /tmp/bouteillederouge.log
+popd
+EOF
+    chmod +x $HOME/puppet-master/launch.sh $HOME/puppet-master/start-pwid
+
+    sudo systemctl daemon-reload
+    sudo systemctl enable puppet-master.service
+}
+
+redirect_port80_webinterface()
+{
+    cat >> firewall << EOF
+#!/bin/sh
+
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+
+# Flush any existing firewall rules we might have
+iptables -F
+iptables -t nat -F
+iptables -t mangle -F
+iptables -X
+
+# Perform the rewriting magic.
+iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to 5000
+EOF
+    chmod +x firewall
+    sudo chown root:root firewall
+    sudo mv firewall /etc/network/if-up.d/firewall
+}
+
+install_custom_raspiconfig()
+{
+    wget https://raw.githubusercontent.com/pierre-rouanet/raspi-config/master/raspi-config
+    chmod +x raspi-config
+    sudo chown root:root raspi-config
+    sudo mv raspi-config /usr/bin/
+}
+
+setup_update()
+{
+    cd || exit
+    wget https://raw.githubusercontent.com/poppy-project/raspoppy/master/poppy-update.sh -O ~/.poppy-update.sh
+
+    cat >> poppy-update << EOF
+#!/usr/bin/env python
+
+import os
+import yaml
+
+from subprocess import call
+
+
+with open(os.path.expanduser('~/.poppy_config.yaml')) as f:
+    config = yaml.load(f)
+
+
+with open(config['update']['logfile'], 'w') as f:
+    call(['bash', os.path.expanduser('~/.poppy-update.sh'),
+          config['update']['url'],
+          config['update']['logfile'],
+          config['update']['lockfile']], stdout=f, stderr=f)
+EOF
+    chmod +x poppy-update
+    mv poppy-update $HOME/.pyenv/versions/2.7.9/bin/
+}
+
 install_poppy_environment() {
   install_pyenv
   install_python
   install_python_std_packages
   install_poppy_software
-  install_notebook_startup
+  configure_jupyter
+  autostart_jupyter
+  install_puppet_master
+  autostartup_webinterface
+  redirect_port80_webinterface
+  install_custom_raspiconfig
+  setup_update
 
   echo "Please now reboot your system"
 }
