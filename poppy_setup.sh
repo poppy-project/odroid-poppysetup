@@ -112,7 +112,8 @@ cd ..
 
 echo -e "\e[33mDefault Hostname change to \e[4mpoppy\e[0m."
 echo 'poppy' > /etc/hostname
-echo '127.0.0.1     poppy' >> /etc/hosts
+sed -i "s/odroid/poppy/g" /etc/hosts
+
 service avahi-daemon restart
 
 echo -e "\e[33mCreate a new user \e[4mpoppy\e[0m\e[33m with the default password \e[4mpoppy\e[0m."

@@ -234,7 +234,7 @@ EOF
 
 install_custom_raspiconfig()
 {
-    wget https://raw.githubusercontent.com/pierre-rouanet/raspi-config/master/raspi-config
+    wget https://raw.githubusercontent.com/poppy-project/odroid-poppysetup/odroid-config -O raspi-config
     chmod +x raspi-config
     sudo chown root:root raspi-config
     sudo mv raspi-config /usr/bin/
