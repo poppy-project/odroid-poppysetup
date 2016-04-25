@@ -94,10 +94,11 @@ fi
 apt-get update
 apt-get install --yes avahi-daemon passwd libnss-mdns network-manager iptables
 
-# Do it only if it is a ODROID board vs rpi
+echo -e "\e[33mResize your file system.\e[0m"
+resize_p2
+    
+# Do it only if it is a ODROID U3
 if [ -e /etc/smsc95xx_mac_addr ]; then
-    echo -e "\e[33mResize your file system.\e[0m"
-    resize_p2
     # see http://forum.odroid.com/viewtopic.php?f=7&t=1070 for understanting
     echo -e "\e[33mChange Mac address'\e[0m"
     rm /etc/smsc95xx_mac_addr

@@ -285,7 +285,8 @@ install_poppy_environment() {
   setup_update
   install_opencv
 
-  echo "Please now reboot your system"
+  echo "Your system will now reboot..."
+  sudo reboot
 }
 
 install_poppy_environment
