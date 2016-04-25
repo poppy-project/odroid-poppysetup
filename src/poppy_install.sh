@@ -265,7 +265,7 @@ install_opencv() {
             cmake -D BUILD_PERF_TESTS=OFF -D BUILD_TESTS=OFF -D PYTHON_EXECUTABLE=/usr/bin/python ..
             make -j4
             sudo make install
-            ln -s /usr/local/lib/python2.7/site-packages/cv2.so $HOME/.pyenv/versions/2.7.11/lib/python2.7/cv2.so
+            ln -s /usr/local/lib/python2.7/dist-packages/cv2.so $HOME/.pyenv/versions/2.7.11/lib/python2.7/cv2.so
         popd
     popd
 
