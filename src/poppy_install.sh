@@ -254,6 +254,23 @@ EOF
     mv poppy-update $HOME/.pyenv/versions/2.7.11/bin/
 }
 
+install_opencv() {
+    sudo apt-get install -y build-essential cmake pkg-config libgtk2.0-dev libjpeg8-dev libtiff5-dev libjasper-dev libpng12-dev libavcodec-dev libavformat-dev libswscale-dev libv4l-dev libatlas-base-dev gfortran python-dev python-numpy
+    wget https://github.com/Itseez/opencv/archive/3.1.0.tar.gz -O opencv.tar.gz
+    tar xvfz opencv.tar.gz
+    rm opencv.tar.gz
+    pushd opencv-3.1.0
+        mkdir build
+        pushd build
+            cmake -D BUILD_PERF_TESTS=OFF -D BUILD_TESTS=OFF -D PYTHON_EXECUTABLE=/usr/bin/python ..
+            make -j4
+            sudo make install
+            ln -s /usr/local/lib/python2.7/site-packages/cv2.so $HOME/.pyenv/versions/2.7.11/lib/python2.7/cv2.so
+        popd
+    popd
+
+}
+
 install_poppy_environment() {
   install_pyenv
   install_python
@@ -266,6 +283,7 @@ install_poppy_environment() {
   redirect_port80_webinterface
   install_custom_raspiconfig
   setup_update
+  install_opencv
 
   echo "Please now reboot your system"
 }
