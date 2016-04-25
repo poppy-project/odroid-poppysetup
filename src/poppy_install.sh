@@ -267,7 +267,8 @@ install_poppy_environment() {
   install_custom_raspiconfig
   setup_update
 
-  echo "Please now reboot your system"
+  echo "Your system will now reboot..."
+  sudo reboot
 }
 
 install_poppy_environment
