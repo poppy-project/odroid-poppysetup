@@ -153,7 +153,7 @@ install_puppet_master() {
 install_snap()
 {
     pushd $1
-        wget https://github.com/jmoenig/Snap--Build-Your-Own-Blocks/archive/master.zip
+        wget https://github.com/jmoenig/Snap--Build-Your-Own-Blocks/archive/master.zip -O master.zip
         unzip master.zip
         rm master.zip
         mv Snap--Build-Your-Own-Blocks-master snap
@@ -162,6 +162,10 @@ install_snap()
         ln -s $pypot_root/server/snap_projects/pypot-snap-blocks.xml snap/libraries/poppy.xml
         echo -e "poppy.xml\tPoppy robots" >> snap/libraries/LIBRARIES
 
+        # Delete snap default examples
+        rm snap/Examples/EXAMPLES
+        
+        # Link pypot Snap projets to Snap! Example folder
         for project in $pypot_root/server/snap_projects/*.xml; do
             ln -s $project snap/Examples/
 
@@ -169,7 +173,7 @@ install_snap()
             echo -e "$filename\tPoppy robots" >> snap/Examples/EXAMPLES
         done
 
-        wget https://github.com/poppy-project/poppy-monitor/archive/master.zip
+        wget https://github.com/poppy-project/poppy-monitor/archive/master.zip -O master.zip
         unzip master.zip
         rm master.zip
         mv poppy-monitor-master monitor
