@@ -10,47 +10,45 @@ To do that you will need :
  - an ethernet connection to your network (internet and local)
 
 
-First of all you need to install your linux system. Please refer to your board manual ([odroid U3](http://com.odroid.com/sigong/nf_file_board/nfile_board_view.php?keyword=&tag=ODROID-U3&bid=243) or [raspberryPi](http://www.raspberrypi.org/downloads/)).
+These boards come with a working Ubuntu base image on the MMC you can use the install scripts on it.
+In the case you have not a fresh installation you have download and burn default system images:
+* [Ubuntu 14.04 for Odroid U3](http://odroid.com/dokuwiki/doku.php?id=en:u3_release_linux_ubuntu)
+* [Ubuntu 14.04 for Odroid XU3/XU4](http://odroid.in/ubuntu_14.04lts/ubuntu-14.04.1lts-lubuntu-odroid-xu3-20150212.img.xz)
 
-Generally you have to download your image plug your memory card into your computer, unmount it and do a binary copy of the image (replace /dev/sdh by your device):
- ```bash
-umount /dev/sdh1 #unmount your memory card
-sudo dd bs=4M if=yourSystem.img of=/dev/sdh # binary copy
-```
-
-Note: if you are running OSX or any BSD based system use (replace /dev/sdh by your device): 
-```
-sudo dd bs=4m if=yourSystem.img of=/dev/sdh
-```
-
-**For more informations on how to burn a system image, look at the installation chapter of the [Poppy documentation](http://docs.poppy-project.org/en/installation/burn-an-image-file.html#write-an-image-to-the-sd-card).**
+To burn it on the MMC/SD-card, look at the [startup section of the Poppy Documentation](http://docs.poppy-project.org/en/installation/burn-an-image-file.html#write-an-image-to-the-sd-card).
 
 Now you have a clean and fresh installation, you can mount your memory card to your board, plug your ethernet connection, and power up.
-If you have any wifi or bluetooth USB dongle you can plug it.
 
-Let's start the installation :
+Login to the board in SSH: `ssh odroid@odroid.local`, password=odroid.
 
- 1. Connecting you to the board over ssh. `ssh odroid@odroid.local` password=odroid
+> **Info** If you are using Windows, you have no native SSH client ; you have to download and install [putty](http://www.putty.org/) or [mobaxterm](http://mobaxterm.mobatek.net/) to use SSH.
 
- 2. Download and run poppy_setup.sh
-```bash
-wget https://raw.githubusercontent.com/poppy-project/odroid-poppysetup/master/poppy_setup.sh -O poppy_setup.sh && sudo bash poppy_setup.sh poppy-humanoid
+Be sure that your board is connected to the Internet, download and run poppy_setup.sh (replace 'poppy-humanoid' below with poppy-torso' if you want to install a Poppy Torso robot):
 ```
-    Do not forget to set the root password "odroid"
+wget https://raw.githubusercontent.com/poppy-project/odroid-poppysetup/master/poppy_setup.sh -O poppy_setup.sh
+sudo bash poppy_setup.sh poppy-humanoid
+```
+You should lose your ssh connection because of the board reboot. This reboot is needed to proceed to the finalisation of the partition resizing. Now your board should installing all the poppy environment. **Please do not unpower the board or shut-it down.**
 
- 3. You should lose your ssh connection because of the board reboot. This reboot is needed to proceed to the finalisation of the partition resizing. Now your board should installing all the poppy environment. Please do not unpower the board or shut-it down.  
- You can see the installation process by reconnecting you to your board with your new poppy account `ssh poppy@poppy.local` password=poppy.
+You can see the installation process by reconnecting you to your board with your new poppy account: `ssh poppy@poppy.local` password=poppy. 
+**Because of the compilation of heavy Python packages (Scipy, Numpy) it can take 30 to 45 minutes to complete.**
 
-  A process will automatically take you terminal and print the installation output. You can leave it with `ctrl+c`. You can get back this print by reading the install_log file :
-```bash
+A process will automatically take you terminal and print the installation output. You can leave it with `ctrl+c`. You can get back this print by reading the install_log file:
+```
 tail -f /home/poppy/install_log
 ```
-If the last line is :
-```bash
+Be patient...
+
+At the end of the installation, your board will reboot again. You can look at the log `tail -f /home/poppy/install_log`, if everything ended well, last lines should be:
+
+```
 System install complete!
 Please share your experiences with the community : https://forum.poppy-project.org/
 ```
-The installation is finish, you can restart your Poppy and start to play!
-```bash
-sudo reboot
-```
+
+> **Note:** If you are not sure of what going up, you can see if the install process is running with: `ps up $(pgrep -f 'poppy_launcher.sh')`
+
+The hostname, default user and password will be all set to "poppy" (`ssh poppy@poppy.local` password=poppy).
+You can test your installation with the web interface in your web browser http://poppy.local.
+
+
