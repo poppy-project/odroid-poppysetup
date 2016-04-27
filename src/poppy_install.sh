@@ -145,7 +145,7 @@ install_puppet_master() {
     pushd puppet-master
         pip install flask pyyaml requests
 
-        python bootstrap.py poppy $creatures
+        python bootstrap.py poppy $creatures --board "Odroid"
         install_snap "$(pwd)"
     popd
 }
