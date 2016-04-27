@@ -116,6 +116,11 @@ EOF
     chmod +x $HOME/.jupyter/launch.sh $HOME/.jupyter/start-daemon
 }
 
+
+autostart_zeroconf_poppy_publisher()
+{
+  sudo sed -i.bkp "/^exit/i #Zeroconf Poppy service\navahi-publish -s $HOSTNAME _poppy_robot._tcp 9 http://poppy-project.org &\n" /etc/rc.local
+}
 install_poppy_software() {
   if [ -z "$use_stable_release" ]; then
     if [ -z "$POPPY_ROOT" ]; then
@@ -282,6 +287,7 @@ install_poppy_environment() {
   install_poppy_software
   configure_jupyter
   autostart_jupyter
+  autostart_zeroconf_poppy_publisher
   install_puppet_master
   autostartup_webinterface
   redirect_port80_webinterface
