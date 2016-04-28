@@ -92,7 +92,7 @@ c.NotebookApp.extra_static_paths = ["static/custom/custom.js"]
 # --- Poppy configuration ---
 EOF
 
-  JUPYTER_CUSTOM_JS_FILE=$HOME/.jupyter/jupyter_notebook_config.py
+  JUPYTER_CUSTOM_JS_FILE=$HOME/.jupyter/custom/custom.js
   mkdir -p "$HOME/.jupyter/custom"
   cat >> "$JUPYTER_CUSTOM_JS_FILE" << EOF
 /* Allow new tab to be openned in an iframe */
@@ -131,6 +131,29 @@ EOF
     chmod +x $HOME/.jupyter/launch.sh $HOME/.jupyter/start-daemon
 }
 
+populate_notebooks()
+{
+  pushd $HOME/notebooks
+
+      if [ "$creatures" == "poppy-humanoid" ]; then
+          curl -o Demo_interface.ipynb https://raw.githubusercontent.com/poppy-project/poppy-humanoid/master/software/samples/notebooks/Demo%20Interface.ipynb
+      fi
+      if [ "$creatures" == "poppy-ergo-jr" ]; then
+          curl -o Quickstart_ergo.ipynb https://raw.githubusercontent.com/poppy-project/pypot/master/samples/notebooks/QuickStart%20playing%20with%20a%20PoppyErgo.ipynb 
+      fi
+
+      # Download community notebooks
+      wget https://github.com/poppy-project/community-notebooks/archive/master.zip -O master.zip
+      unzip master.zip
+      mv community-notebooks-master community-notebooks
+      rm master.zip
+
+      # Copy the documentation pdf
+      wget https://www.gitbook.com/download/pdf/book/poppy-project/poppy-docs?lang=en -O documentation.pdf
+
+
+  popd
+}
 
 autostart_zeroconf_poppy_publisher()
 {
@@ -151,7 +174,7 @@ install_poppy_software()
     pip install $repo
   done
 
-  # Allow more easily to users to view and modify the code
+  # Symlink poppy python package to allow more easily to users to view and modify the code
   for repo in pypot $creatures ; do
     # Replace - to _ (I don't like regex)
     module=`ipython -c 'str = "'$repo'" ; print str.replace("-","_")'`
@@ -295,8 +318,11 @@ install_opencv()
 {
 
     # Get out if opencv is already installed
-    if [[ $(python -c "import cv2" -neq 0 &> /dev/null) ]] && return
-    cd || exit
+    if $(python -c "import cv2" &> /dev/null); then
+        echo "opencv is already installed"
+        return
+    fi
+
     pushd $POPPY_ROOT
         sudo apt-get install -y build-essential cmake pkg-config libgtk2.0-dev libjpeg8-dev libtiff5-dev libjasper-dev libpng12-dev libavcodec-dev libavformat-dev libswscale-dev libv4l-dev libatlas-base-dev gfortran python-dev python-numpy
         wget https://github.com/Itseez/opencv/archive/3.1.0.tar.gz -O opencv.tar.gz
@@ -317,6 +343,13 @@ install_opencv()
 install_git_lfs()
 {
     set -e
+    # Get out if git-lfs is already installed
+    if $(git-lfs &> /dev/null); then
+        echo "git-lfs is already installed"
+        return
+    fi
+
+
     # Install go 1.6 for ARMv6 (works also on ARMv7 & ARMv8)
     mkdir -p $POPPY_ROOT/go
     pushd "$POPPY_ROOT/go"
@@ -350,6 +383,7 @@ install_poppy_environment()
   install_python_std_packages
   install_poppy_software
   configure_jupyter
+  populate_notebooks
   autostart_jupyter
   autostart_zeroconf_poppy_publisher
   install_puppet_master
@@ -358,6 +392,7 @@ install_poppy_environment()
   install_custom_raspiconfig
   setup_update
   install_opencv
+  install_git_lfs
 
   echo "Your system will now reboot..."
   sudo reboot
