@@ -86,7 +86,19 @@ configure_jupyter()
 c.NotebookApp.ip = '*'
 c.NotebookApp.open_browser = False
 c.NotebookApp.notebook_dir = '$JUPTER_NOTEBOOK_FOLDER'
+c.NotebookApp.tornado_settings = { 'headers': { 'Content-Security-Policy': "frame-ancestors 'self' *" } }
+c.NotebookApp.allow_origin = '*'
+c.NotebookApp.extra_static_paths = ["static/custom/custom.js"]
 # --- Poppy configuration ---
+EOF
+
+  JUPYTER_CUSTOM_JS_FILE=$HOME/.jupyter/jupyter_notebook_config.py
+  mkdir -p "$HOME/.jupyter/custom"
+  cat >> "$JUPYTER_CUSTOM_JS_FILE" << EOF
+/* Allow new tab to be openned in an iframe */
+define(['base/js/namespace'], function(Jupyter){
+  Jupyter._target = '_self';
+})
 EOF
 
     python -c """
@@ -119,6 +131,11 @@ EOF
     chmod +x $HOME/.jupyter/launch.sh $HOME/.jupyter/start-daemon
 }
 
+
+autostart_zeroconf_poppy_publisher()
+{
+  sudo sed -i.bkp "/^exit/i #Zeroconf Poppy service\navahi-publish -s $HOSTNAME _poppy_robot._tcp 9 http://poppy-project.org &\n" /etc/rc.local
+}
 install_poppy_software() 
 {
   if [ -z "$use_stable_release" ]; then
@@ -144,7 +161,8 @@ install_poppy_software()
   done
 }
 
-configure_dialout() {
+configure_dialout() 
+{
   sudo adduser $USER dialout
 }
 
@@ -324,6 +342,7 @@ install_poppy_environment()
   install_poppy_software
   configure_jupyter
   autostart_jupyter
+  autostart_zeroconf_poppy_publisher
   install_puppet_master
   autostartup_webinterface
   redirect_port80_webinterface
