@@ -295,7 +295,7 @@ install_opencv()
 {
 
     # Get out if opencv is already installed
-    [[ python -c "import cv2" ]] && return
+    if [[ $(python -c "import cv2" -neq 0 &> /dev/null) ]] && return
     cd || exit
     pushd $POPPY_ROOT
         sudo apt-get install -y build-essential cmake pkg-config libgtk2.0-dev libjpeg8-dev libtiff5-dev libjasper-dev libpng12-dev libavcodec-dev libavformat-dev libswscale-dev libv4l-dev libatlas-base-dev gfortran python-dev python-numpy
@@ -316,22 +316,29 @@ install_opencv()
 
 install_git_lfs()
 {
-    # Install go 1.6
+    set -e
+    # Install go 1.6 for ARMv6 (works also on ARMv7 & ARMv8)
     mkdir -p $POPPY_ROOT/go
     pushd "$POPPY_ROOT/go"
         wget https://storage.googleapis.com/golang/go1.6.2.linux-armv6l.tar.gz -O go.tar.gz
         sudo tar -C /usr/local -xzf go.tar.gz
         rm go.tar.gz
         export PATH=$PATH:/usr/local/go/bin
-        export GOPATH=$HOME/
-        export GOROOT=/usr/local/go
-        echo "PATH=$PATH:/usr/local/go/bin" >> $HOME/.poppy_profile
+        export GOPATH=$PWD
+        echo "PATH=$PATH:/usr/local/go/bin" >> $HOME/.bashrc
+        echo "GOPATH=$PWD" >> $HOME/.bashrc
+    
+        # Download and compile git-lfs
+        mkdir -p github.com/github/
+        git clone https://github.com/github/git-lfs
+        pushd git-lfs
+          script/bootstrap
+          sudo cp git-lfs /usr/bin/
+        popd
     popd
-
-    # Download and compile git-lfs
-    go get github.com/github/git-lfs 
+    hash -r 
     git lfs install
-
+    set +e
 }
 
 install_poppy_environment() 
