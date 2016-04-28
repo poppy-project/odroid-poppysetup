@@ -329,11 +329,13 @@ install_git_lfs()
         echo "GOPATH=$PWD" >> $HOME/.bashrc
     
         # Download and compile git-lfs
-        mkdir -p github.com/github/
-        git clone https://github.com/github/git-lfs
-        pushd git-lfs
-          script/bootstrap
-          sudo cp git-lfs /usr/bin/
+        mkdir -p src/github.com/github
+        pushd src/github.com/github
+            git clone https://github.com/github/git-lfs
+            pushd git-lfs
+              script/bootstrap
+              sudo cp bin/git-lfs /usr/bin/
+            popd
         popd
     popd
     hash -r 
