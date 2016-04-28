@@ -86,7 +86,7 @@ configure_jupyter()
 c.NotebookApp.ip = '*'
 c.NotebookApp.open_browser = False
 c.NotebookApp.notebook_dir = '$JUPTER_NOTEBOOK_FOLDER'
-c.NotebookApp.tornado_settings = { 'headers': { 'Content-Security-Policy': "frame-ancestors 'self' *" } }
+c.NotebookApp.tornado_settings = { 'headers': { 'Content-Security-Policy': "frame-ancestors 'self' http://* " } }
 c.NotebookApp.allow_origin = '*'
 c.NotebookApp.extra_static_paths = ["static/custom/custom.js"]
 # --- Poppy configuration ---
@@ -94,7 +94,7 @@ EOF
 
   JUPYTER_CUSTOM_JS_FILE=$HOME/.jupyter/custom/custom.js
   mkdir -p "$HOME/.jupyter/custom"
-  cat >> "$JUPYTER_CUSTOM_JS_FILE" << EOF
+  cat > "$JUPYTER_CUSTOM_JS_FILE" << EOF
 /* Allow new tab to be openned in an iframe */
 define(['base/js/namespace'], function(Jupyter){
   Jupyter._target = '_self';
@@ -112,18 +112,19 @@ if not os.path.exists(d):
 """
 
     pip install https://github.com/ipython-contrib/IPython-notebook-extensions/archive/master.zip --user
+    jupyter nbextension enable --py widgetsnbextension
 }
 
 autostart_jupyter()
 {
     sudo sed -i.bkp "/^exit/i #jupyter service\n$HOME/.jupyter/start-daemon &\n" /etc/rc.local
 
-    cat >> $HOME/.jupyter/launch.sh << 'EOF'
+    cat > $HOME/.jupyter/launch.sh << 'EOF'
 export PATH=$HOME/.pyenv/shims/:$PATH
 jupyter notebook
 EOF
 
-    cat >> $HOME/.jupyter/start-daemon << EOF
+    cat > $HOME/.jupyter/start-daemon << EOF
 #!/bin/bash
 su - $(whoami) -c "bash $HOME/.jupyter/launch.sh"
 EOF
@@ -136,7 +137,7 @@ populate_notebooks()
   pushd $HOME/notebooks
 
       if [ "$creatures" == "poppy-humanoid" ]; then
-          curl -o Demo_interface.ipynb https://raw.githubusercontent.com/poppy-project/poppy-humanoid/master/software/samples/notebooks/Demo%20Interface.ipynb
+          curl -o Demo_Poppy_Humanoid.ipynb https://raw.githubusercontent.com/poppy-project/poppy-humanoid/master/software/samples/notebooks/Demo%20Interface.ipynb
       fi
       if [ "$creatures" == "poppy-ergo-jr" ]; then
           curl -o Quickstart_ergo.ipynb https://raw.githubusercontent.com/poppy-project/pypot/master/samples/notebooks/QuickStart%20playing%20with%20a%20PoppyErgo.ipynb 
@@ -242,15 +243,14 @@ autostartup_webinterface()
 
     sudo sed -i.bkp "/^exit/i #puppet-master service\n$POPPY_ROOT/puppet-master/start-pwid &\n" /etc/rc.local
 
-
-    cat >> $POPPY_ROOT/puppet-master/start-pwid << EOF
+    cat > $POPPY_ROOT/puppet-master/start-pwid << EOF
 #!/bin/bash
 su - $(whoami) -c "bash $POPPY_ROOT/puppet-master/launch.sh"
 EOF
 
-    cat >> $POPPY_ROOT/puppet-master/launch.sh << 'EOF'
+    cat > $POPPY_ROOT/puppet-master/launch.sh << 'EOF'
 export PATH=$HOME/.pyenv/shims/:$PATH
-pushd $POPPY_ROOT/puppet-master
+pushd $HOME/dev/puppet-master
     python bouteillederouge.py 1>&2 2> /tmp/bouteillederouge.log
 popd
 EOF
@@ -345,7 +345,7 @@ install_git_lfs()
     set -e
     # Get out if git-lfs is already installed
     if $(git-lfs &> /dev/null); then
-        echo "git-lfs is already installed"
+        echo "opencv is already installed"
         return
     fi
 
