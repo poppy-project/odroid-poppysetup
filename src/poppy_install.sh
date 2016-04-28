@@ -36,7 +36,8 @@ for creature in $creatures
 done
 
 
-install_pyenv() {
+install_pyenv() 
+{
   sudo apt-get install -y curl git
   sudo apt-get install -y make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget llvm
   sudo apt-get install -y libfreetype6-dev libpng++-dev
@@ -53,12 +54,14 @@ install_pyenv() {
   eval \"\$(pyenv virtualenv-init -)\"" >> $HOME/.bashrc
 }
 
-install_python() {
+install_python() 
+{
   pyenv install -s 2.7.11
   pyenv global 2.7.11
 }
 
-install_python_std_packages() {
+install_python_std_packages() 
+{
   # Install Scipy dependancies
   sudo apt-get -y install libblas3gf libc6 libgcc1 libgfortran3 liblapack3gf libstdc++6 build-essential gfortran python-all-dev libatlas-base-dev
   # not sure it is realy needed
@@ -74,7 +77,7 @@ configure_jupyter()
     JUPYTER_CONFIG_FILE=$HOME/.jupyter/jupyter_notebook_config.py
     JUPTER_NOTEBOOK_FOLDER=$HOME/notebooks
 
-    mkdir $JUPTER_NOTEBOOK_FOLDER
+    mkdir -p $JUPTER_NOTEBOOK_FOLDER
 
     jupyter notebook --generate-config
 
@@ -116,7 +119,8 @@ EOF
     chmod +x $HOME/.jupyter/launch.sh $HOME/.jupyter/start-daemon
 }
 
-install_poppy_software() {
+install_poppy_software() 
+{
   if [ -z "$use_stable_release" ]; then
     if [ -z "$POPPY_ROOT" ]; then
       POPPY_ROOT="${HOME}/dev"
@@ -129,24 +133,35 @@ install_poppy_software() {
   do
     pip install $repo
   done
+
+  # Allow more easily to users to view and modify the code
+  for repo in pypot $creatures ; do
+    # Replace - to _ (I don't like regex)
+    module=`ipython -c 'str = "'$repo'" ; print str.replace("-","_")'`
+
+    module_path=`ipython -c 'import '$module', os; print os.path.dirname('$module'.__file__)'`
+    ln -s "$module_path" "$POPPY_ROOT"
+  done
 }
 
 configure_dialout() {
   sudo adduser $USER dialout
 }
 
-install_puppet_master() {
-    cd || exit
-    wget https://github.com/poppy-project/puppet-master/archive/master.zip
-    unzip master.zip
-    rm master.zip
-    mv puppet-master-master puppet-master
+install_puppet_master() 
+{
+    pushd "$POPPY_ROOT"
+        wget https://github.com/poppy-project/puppet-master/archive/master.zip
+        unzip master.zip
+        rm master.zip
+        mv puppet-master-master puppet-master
 
-    pushd puppet-master
-        pip install flask pyyaml requests
+        pushd puppet-master
+            pip install flask pyyaml requests
 
-        python bootstrap.py poppy $creatures --board "Odroid"
-        install_snap "$(pwd)"
+            python bootstrap.py poppy $creatures --board "Odroid"
+            install_snap "$(pwd)"
+        popd
     popd
 }
 
@@ -184,21 +199,21 @@ autostartup_webinterface()
 {
     cd || exit
 
-    sudo sed -i.bkp "/^exit/i #puppet-master service\n$HOME/puppet-master/start-pwid &\n" /etc/rc.local
+    sudo sed -i.bkp "/^exit/i #puppet-master service\n$POPPY_ROOT/puppet-master/start-pwid &\n" /etc/rc.local
 
 
-    cat >> $HOME/puppet-master/start-pwid << EOF
+    cat >> $POPPY_ROOT/puppet-master/start-pwid << EOF
 #!/bin/bash
-su - $(whoami) -c "bash $HOME/puppet-master/launch.sh"
+su - $(whoami) -c "bash $POPPY_ROOT/puppet-master/launch.sh"
 EOF
 
-    cat >> $HOME/puppet-master/launch.sh << 'EOF'
+    cat >> $POPPY_ROOT/puppet-master/launch.sh << 'EOF'
 export PATH=$HOME/.pyenv/shims/:$PATH
-pushd $HOME/puppet-master
+pushd $POPPY_ROOT/puppet-master
     python bouteillederouge.py 1>&2 2> /tmp/bouteillederouge.log
 popd
 EOF
-    chmod +x $HOME/puppet-master/launch.sh $HOME/puppet-master/start-pwid
+    chmod +x $POPPY_ROOT/puppet-master/launch.sh $POPPY_ROOT/puppet-master/start-pwid
 }
 
 redirect_port80_webinterface()
@@ -258,24 +273,28 @@ EOF
     mv poppy-update $HOME/.pyenv/versions/2.7.11/bin/
 }
 
-install_opencv() {
-    sudo apt-get install -y build-essential cmake pkg-config libgtk2.0-dev libjpeg8-dev libtiff5-dev libjasper-dev libpng12-dev libavcodec-dev libavformat-dev libswscale-dev libv4l-dev libatlas-base-dev gfortran python-dev python-numpy
-    wget https://github.com/Itseez/opencv/archive/3.1.0.tar.gz -O opencv.tar.gz
-    tar xvfz opencv.tar.gz
-    rm opencv.tar.gz
-    pushd opencv-3.1.0
-        mkdir build
-        pushd build
-            cmake -D BUILD_PERF_TESTS=OFF -D BUILD_TESTS=OFF -D PYTHON_EXECUTABLE=/usr/bin/python ..
-            make -j4
-            sudo make install
-            ln -s /usr/local/lib/python2.7/dist-packages/cv2.so $HOME/.pyenv/versions/2.7.11/lib/python2.7/cv2.so
+install_opencv() 
+{
+    cd || exit
+    pushd $POPPY_ROOT
+        sudo apt-get install -y build-essential cmake pkg-config libgtk2.0-dev libjpeg8-dev libtiff5-dev libjasper-dev libpng12-dev libavcodec-dev libavformat-dev libswscale-dev libv4l-dev libatlas-base-dev gfortran python-dev python-numpy
+        wget https://github.com/Itseez/opencv/archive/3.1.0.tar.gz -O opencv.tar.gz
+        tar xvfz opencv.tar.gz
+        rm opencv.tar.gz
+        pushd opencv-3.1.0
+            mkdir -p build
+            pushd build
+                cmake -D BUILD_PERF_TESTS=OFF -D BUILD_TESTS=OFF -D PYTHON_EXECUTABLE=/usr/bin/python ..
+                make -j4
+                sudo make install
+                ln -s /usr/local/lib/python2.7/dist-packages/cv2.so $HOME/.pyenv/versions/2.7.11/lib/python2.7/cv2.so
+            popd
         popd
     popd
-
 }
 
-install_poppy_environment() {
+install_poppy_environment() 
+{
   install_pyenv
   install_python
   install_python_std_packages
