@@ -17,9 +17,6 @@ do
     fi
 done
 
-wget -P  /home https://raw.githubusercontent.com/poppy-project/odroid-poppysetup/master/src/poppy_logo
-sed -i /poppy_logo/d /home/poppy/.bashrc
-echo cat /home/poppy_logo >> /home/poppy/.bashrc
 echo 'Starting the Poppy environement installation' >> /home/poppy/install_log
 sed -i /install_log/d /home/poppy/.bashrc
 echo tail -f /home/poppy/install_log >> /home/poppy/.bashrc
