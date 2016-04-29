@@ -259,7 +259,7 @@ EOF
 
 redirect_port80_webinterface()
 {
-    cat >> firewall << EOF
+    cat > firewall << EOF
 #!/bin/sh
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin
