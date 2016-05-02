@@ -44,10 +44,17 @@ install_pyenv()
 
   curl -L https://raw.githubusercontent.com/yyuu/pyenv-installer/master/bin/pyenv-installer | bash
 
+  
   export PATH="$HOME/.pyenv/bin:$PATH"
   eval "$(pyenv init -)"
   eval "$(pyenv virtualenv-init -)"
 
+  # Remove all occurences to pyenv in ~/.bashrc
+  sed -i /pyenv/d $HOME/.bashrc
+  
+  # If a .bash_profile is present, .bashrc will not be loaded
+  rm $HOME/.bash_profile
+  
   echo "
   export PATH=\"\$HOME/.pyenv/bin:\$PATH\"
   eval \"\$(pyenv init -)\"
