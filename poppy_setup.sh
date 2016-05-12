@@ -92,7 +92,7 @@ then
 fi
 
 apt-get update
-apt-get install --yes avahi-daemon passwd libnss-mdns network-manager iptables
+apt-get install --yes avahi-daemon avahi-autoipd passwd libnss-mdns network-manager iptables
 
 echo -e "\e[33mResize your file system.\e[0m"
 resize_p2
