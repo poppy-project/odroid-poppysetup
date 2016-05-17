@@ -356,10 +356,10 @@ install_git_lfs()
         return
     fi
 
-
+    GIT_LFS_BUILD=$HOME/.bin
     # Install go 1.6 for ARMv6 (works also on ARMv7 & ARMv8)
-    mkdir -p $POPPY_ROOT/go
-    pushd "$POPPY_ROOT/go"
+    mkdir -p "$GIT_LFS_BUILD/go"
+    pushd "$GIT_LFS_BUILD/go"
         wget https://storage.googleapis.com/golang/go1.6.2.linux-armv6l.tar.gz -O go.tar.gz
         sudo tar -C /usr/local -xzf go.tar.gz
         rm go.tar.gz
