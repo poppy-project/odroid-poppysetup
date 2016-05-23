@@ -146,6 +146,16 @@ populate_notebooks()
       if [ "$creatures" == "poppy-humanoid" ]; then
           curl -o Demo_Poppy_Humanoid.ipynb https://raw.githubusercontent.com/poppy-project/poppy-humanoid/master/software/samples/notebooks/Demo%20Interface.ipynb
       fi
+      if [ "$creatures" == "poppy-torso" ]; then
+          curl -o "Discover your Poppy Torso.ipynb" https://raw.githubusercontent.com/poppy-project/poppy-torso/master/software/samples/notebooks/Discover%20your%20Poppy%20Torso.ipynb
+          curl -o "Record, save and play moves on Poppy Torso.ipynb" https://raw.githubusercontent.com/poppy-project/poppy-torso/master/software/samples/notebooks/Record%2C%20Save%20and%20Play%20Moves%20on%20Poppy%20Torso.ipynb
+          
+          mkdir images
+          pushd images
+            wget https://raw.githubusercontent.com/poppy-project/poppy-torso/master/software/samples/notebooks/images/poppy_torso.jpg
+            wget https://raw.githubusercontent.com/poppy-project/poppy-torso/master/software/samples/notebooks/images/poppy_torso_motors.png
+          popd
+      fi
       if [ "$creatures" == "poppy-ergo-jr" ]; then
           curl -o Quickstart_ergo.ipynb https://raw.githubusercontent.com/poppy-project/pypot/master/samples/notebooks/QuickStart%20playing%20with%20a%20PoppyErgo.ipynb 
       fi
