@@ -234,7 +234,7 @@ install_snap()
 
         pypot_root=$(python -c "import pypot, os; print(os.path.dirname(pypot.__file__))")
         ln -s $pypot_root/server/snap_projects/pypot-snap-blocks.xml snap/libraries/poppy.xml
-        echo -e "poppy.xml\tPoppy robots" >> snap/libraries/LIBRARIES
+        echo -e "$filename\t$filename" >> snap/Examples/EXAMPLES
 
         # Delete snap default examples
         rm snap/Examples/EXAMPLES
