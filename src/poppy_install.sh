@@ -145,6 +145,14 @@ populate_notebooks()
 
       if [ "$creatures" == "poppy-humanoid" ]; then
           curl -o Demo_Poppy_Humanoid.ipynb https://raw.githubusercontent.com/poppy-project/poppy-humanoid/master/software/samples/notebooks/Demo%20Interface.ipynb
+          curl -o "Discover your Poppy Humanoid.ipynb" https://raw.githubusercontent.com/poppy-project/poppy-humanoid/master/software/samples/notebooks/Discover%20your%20Poppy%20Humanoid.ipynb
+          curl -o "Record, save and play moves on Poppy Humanoid.ipynb" https://raw.githubusercontent.com/poppy-project/poppy-humanoid/master/software/samples/notebooks/Record%2C%20Save%20and%20Play%20Moves%20on%20Poppy%20Humanoid.ipynb
+
+          mkdir -p image
+          pushd image
+            wget https://raw.githubusercontent.com/poppy-project/poppy-humanoid/master/software/samples/notebooks/image/poppy_humanoid.jpg -O poppy_humanoid.jpg
+            wget https://raw.githubusercontent.com/poppy-project/poppy-humanoid/master/software/samples/notebooks/image/poppy_humanoid_motors.png -O poppy_humanoid_motors.png
+          popd
       fi
       if [ "$creatures" == "poppy-torso" ]; then
           curl -o "Discover your Poppy Torso.ipynb" https://raw.githubusercontent.com/poppy-project/poppy-torso/master/software/samples/notebooks/Discover%20your%20Poppy%20Torso.ipynb
