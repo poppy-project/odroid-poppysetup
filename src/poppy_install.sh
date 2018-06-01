@@ -195,7 +195,7 @@ install_poppy_software()
     mkdir -p $POPPY_ROOT
   fi
 
-  for repo in pypot poppy-creature $creatures
+  for repo in pypot $creatures
   do
     pip install $repo
   done
