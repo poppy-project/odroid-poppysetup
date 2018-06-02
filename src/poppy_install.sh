@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -x
+export DEBIAN_FRONTEND=noninteractive
 
 usage() {
   echo "Usage: $0 [-S, --use-stable-release] CREATURE1 CREATURE2 ..." 1>&2
@@ -96,6 +97,8 @@ c.NotebookApp.notebook_dir = '$JUPTER_NOTEBOOK_FOLDER'
 c.NotebookApp.tornado_settings = { 'headers': { 'Content-Security-Policy': "frame-ancestors 'self' http://* " } }
 c.NotebookApp.allow_origin = '*'
 c.NotebookApp.extra_static_paths = ["static/custom/custom.js"]
+c.NotebookApp.token = ''
+c.NotebookApp.password = ''
 # --- Poppy configuration ---
 EOF
 

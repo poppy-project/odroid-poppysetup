@@ -119,7 +119,7 @@ service avahi-daemon restart
 
 echo -e "\e[33mCreate a new user \e[4mpoppy\e[0m\e[33m with the default password \e[4mpoppy\e[0m."
 
-useradd -m -s /bin/bash -G adm,dialout,fax,cdrom,floppy,tape,sudo,audio,dip,video,plugdev,netdev,lpadmin,fuse poppy
+useradd -m -s /bin/bash -G adm,dialout,fax,cdrom,floppy,tape,sudo,audio,dip,video,plugdev,netdev,lpadmin poppy
 echo poppy:poppy | chpasswd
 
 echo -e '\e[33mNow I will reboot and continue the installation.\e[0m'
